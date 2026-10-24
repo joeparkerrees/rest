@@ -13,14 +13,17 @@ enum Snapshot {
         let defaults = UserDefaults(suiteName: "snapshot")!
         defaults.removePersistentDomain(forName: "snapshot")
 
+        let mic = "MacBook Pro Microphone"
+        let zoom = MeetingDetector.App(name: "Zoom", bundleID: "us.zoom.xos", isSystem: false)
         let states: [(String, (Rest) -> Void)] = [
             ("working", { $0.seedForSnapshot(worked: 7 * 60 + 26) }),
-            ("call", { $0.seedForSnapshot(worked: 20 * 60, hold: .call("Zoom")) }),
+            ("call", { $0.meetings.seedForSnapshot(microphone: mic, callIn: zoom); $0.seedForSnapshot(worked: 20 * 60, hold: .call("Zoom")) }),
             ("away", { $0.seedForSnapshot(worked: 13 * 60, away: true) }),
             ("paused", { $0.seedForSnapshot(worked: 4 * 60, paused: true) }),
         ]
         for (name, seed) in states {
             let rest = Rest(defaults: defaults)
+            rest.meetings.seedForSnapshot(microphone: mic)
             seed(rest)
             write(Panel(rest: rest).fixedSize(), to: directory.appendingPathComponent("panel-\(name).png"))
             write(Panel(rest: rest).fixedSize(), to: directory.appendingPathComponent("panel-\(name)-dark.png"), scheme: .dark)

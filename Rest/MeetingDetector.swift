@@ -127,6 +127,16 @@ final class MeetingDetector {
         cameraDevicesListener = camerasChanged
     }
 
+    #if DEBUG
+    /// Snapshots set what the detector sees instead of reading the hardware:
+    /// one microphone, live if an app has it for a call.
+    func seedForSnapshot(microphone: String, callIn app: App? = nil) {
+        microphones = [Microphone(id: 0, uid: "snapshot", name: microphone, running: app != nil)]
+        micApps = app.map { [$0] } ?? []
+        canAttribute = true
+    }
+    #endif
+
     // MARK: Microphones
 
     private func reloadMicrophones() {
