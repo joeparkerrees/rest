@@ -67,6 +67,9 @@ final class Rest {
     private(set) var now = Date()
     /// Apps you've told Rest never to count as a call, by bundle ID.
     private(set) var ignoredApps: [String] = []
+    /// What the next break will suggest looking at. It stands on the
+    /// horizon in the panel until then.
+    private(set) var nextSight = Sight.pick(after: nil)
 
     let settings: Settings
     let meetings = MeetingDetector()
@@ -81,7 +84,6 @@ final class Rest {
     @ObservationIgnored private let breakWindows = BreakWindows()
     @ObservationIgnored private let island = Island()
     @ObservationIgnored private let cursor = CursorCountdown()
-    @ObservationIgnored private var lastSight: Sight?
 
     init(defaults: UserDefaults = .standard) {
         self.defaults = defaults
@@ -303,7 +305,7 @@ final class Rest {
             cursor.hide()
             return
         }
-        cursor.show(until: now.addingTimeInterval(left), length: settings.cursor)
+        cursor.show(until: now.addingTimeInterval(left))
     }
 
     private func currentHold() -> Hold? {
@@ -334,13 +336,12 @@ final class Rest {
         phase = .onBreak(long: long, started: started, ends: started.addingTimeInterval(long ? settings.longBreak : settings.shortBreak))
         hold = nil
         cursor.hide()
-        let sight = Sight.pick(after: lastSight)
-        lastSight = sight
-        breakWindows.show(rest: self, sight: sight)
+        breakWindows.show(rest: self, sight: nextSight)
     }
 
     private func endBreak() {
         breakWindows.hide()
+        nextSight = Sight.pick(after: nextSight)
         phase = .working
         worked = 0
         lastTick = Date()
@@ -360,8 +361,9 @@ final class Rest {
 
     #if DEBUG
     /// Snapshots set the clock directly instead of waiting for it.
-    func seedForSnapshot(worked: TimeInterval, away: Bool = false, hold: Hold? = nil, paused: Bool = false, onBreak: (long: Bool, elapsed: TimeInterval)? = nil) {
+    func seedForSnapshot(worked: TimeInterval, away: Bool = false, hold: Hold? = nil, paused: Bool = false, onBreak: (long: Bool, elapsed: TimeInterval)? = nil, sight: Sight = Sight.all[0]) {
         self.worked = worked
+        nextSight = sight
         self.away = away
         self.hold = hold
         pausedUntil = paused ? Date().addingTimeInterval(3600) : nil

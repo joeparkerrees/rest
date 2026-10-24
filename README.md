@@ -1,17 +1,17 @@
 # Rest
 
-A small macOS menu bar break timer in the design system from [Tuner](https://github.com/joeparkerrees/nts), my NTS player.
+A small macOS menu bar break timer. The panel and the break screen are a flat landscape, a pale sky over dark green land, with a red sun that comes up while you work and goes down during the break.
 
 Every 20 minutes it covers the screen for 30 seconds, and every fourth break is 3 minutes. The break screen shows the time left and suggests something to look at out of the window, like a church spire, a plane or the top of a tree, each with its own pictogram. It follows the system's light or dark appearance. Breaks wait while you're on a call or the app in front is playing video, and the clock stops while you're away.
 
 ## Controls
 
 - The menu bar shows the minutes until the next break, dimmed while the clock is stopped, and the seconds left in a filled box during a break.
-- The dial shows the time until the next break. The bead goes hollow while the clock is stopped.
+- The picture in the panel shows the time until the next break, and the sun comes up from behind the land as it gets closer. The sun goes hollow while the clock is stopped. The thing the next break will ask you to look at stands on the horizon.
 - The round key pauses for an hour, or starts the clock again.
 - Take a break now starts one straight away.
 - In the last minute before a break, the notch widens to count down to it, like the Dynamic Island. Five seconds out it opens into the warning; its 5 more min key pushes the break back. On a Mac without a notch the warning is a white capsule under the menu bar instead, and clicking it does the same.
-- For the last 10 seconds before a break, a small copy of the dial follows the pointer, with the seconds in the middle and the bead going once round as they run out. It doesn't take clicks, and near the edge of a screen it moves to the other side of the pointer.
+- For the last 10 seconds before a break, the red sun follows the pointer with the seconds counting down in it. It doesn't take clicks, and near the edge of a screen it moves to the other side of the pointer.
 - When a call starts, the notch opens to say so, with the app's icon, "On a call in Arc", and two keys. Ignore till next break stops this call counting. Always ignore Arc stops Arc counting for good. It closes by itself after eight seconds unless the pointer is on it, and it won't ask about the same app again within ten minutes. If an ignored app has the mic, click the call row in the panel to count it again. Shazam counts too, since it has the mic, but the notice says "Shazam is active" rather than calling it a call.
 - Click the next-break row to push the break back five minutes.
 - On the break screen, Skip or Esc twice ends it once the first five seconds are up. Until then Skip is filled grey, and the fill drains out of it from right to left.
@@ -64,8 +64,8 @@ build/Build/Products/Debug/Rest.app/Contents/MacOS/Rest --meetings 30
 - `MeetingDetector.swift` is the call detection: microphones, cameras and which app.
 - `Activity.swift` reads idle time and the video check.
 - `Rest.swift` is the clock and its rules.
-- `Dial.swift` is the panel dial, `Panel.swift` everything around it, and `BreakScreen.swift` the break and the capsule warning.
+- `Horizon.swift` is the panel's picture, `Panel.swift` everything around it, and `BreakScreen.swift` the break and the capsule warning.
 - `Island.swift` is the countdown and warning that grow out of the notch.
 - `Cursor.swift` is the countdown that follows the pointer.
 - `Sights.swift` has the things to look at. Their pictograms are template PDFs under `Assets.xcassets/Sights`: eight traced from the pictogram set, and the spire, cloud, bird, crane and chimney drawn to match it. `tools/draw-sights.py <folder>` redraws those five (it needs Pillow and potrace).
-- `Theme.swift` is Tuner's, with a dark version of each colour added.
+- `Theme.swift` has the colours, with a night version of each for dark mode.

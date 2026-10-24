@@ -33,19 +33,21 @@ enum Snapshot {
         rest.seedForSnapshot(worked: 0, onBreak: (long: false, elapsed: 9))
         write(BreakScreen(rest: rest, sight: Sight.all[0]).frame(width: 1440, height: 900), to: directory.appendingPathComponent("break.png"), scale: 1)
         write(BreakScreen(rest: rest, sight: Sight.all[1]).frame(width: 1440, height: 900), to: directory.appendingPathComponent("break-dark.png"), scale: 1, scheme: .dark)
+        // A sight that flies rather than stands.
+        write(BreakScreen(rest: rest, sight: Sight.all[4]).frame(width: 1440, height: 900), to: directory.appendingPathComponent("break-plane.png"), scale: 1)
 
         // Skip part way through its lock, at 2x.
         let skips = HStack(spacing: 16) {
             ForEach([1, 0.6, 0.25, 0], id: \.self) { fill in
                 Button {} label: { Text("Skip").frame(minWidth: 88, minHeight: 30) }
-                    .buttonStyle(QuietKey(fill: fill))
+                    .buttonStyle(LandKey(fill: fill))
                     .font(.system(size: 12))
-                    .foregroundStyle(fill > 0 ? Theme.muted : Theme.ink)
+                    .foregroundStyle(Theme.onLand.opacity(fill > 0 ? 0.55 : 1))
             }
         }
         .padding(24)
-        write(skips.background(Theme.ground), to: directory.appendingPathComponent("skip.png"))
-        write(skips.background(Theme.ground), to: directory.appendingPathComponent("skip-dark.png"), scheme: .dark)
+        write(skips.background(Theme.land), to: directory.appendingPathComponent("skip.png"))
+        write(skips.background(Theme.land), to: directory.appendingPathComponent("skip-dark.png"), scheme: .dark)
 
         // Every suggestion's icon, in a row, at 2x.
         let icons = HStack(spacing: 24) {
@@ -99,8 +101,8 @@ enum Snapshot {
     static func renderCursor(to directory: URL) {
         let pointer = CGPoint(x: 28, y: 22)
         let view = ZStack(alignment: .topLeading) {
-            Theme.ground
-            CursorDial(progress: 0.3, seconds: 7)
+            Theme.haze
+            CursorDial(seconds: 7)
                 .offset(x: pointer.x + CursorCountdown.offset - CursorCountdown.size / 2, y: pointer.y + CursorCountdown.offset - CursorCountdown.size / 2)
             // Offscreen there's no cursor image to draw, so a stand-in arrow
             // with its hotspot on the pointer.
@@ -150,7 +152,7 @@ enum IslandDemo {
             try? await Task.sleep(for: .seconds(1))
             // The pointer's countdown runs alongside, for the last ten seconds.
             DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
-                MainActor.assumeIsolated { cursor.show(until: Date().addingTimeInterval(10), length: 10) }
+                MainActor.assumeIsolated { cursor.show(until: Date().addingTimeInterval(10)) }
             }
             for second in stride(from: 12, through: 6, by: -1) {
                 island.approach(remaining: TimeInterval(second))

@@ -391,7 +391,7 @@ struct IslandView: View {
     }
 }
 
-/// Tuner's quiet key, turned out for the black island.
+/// The quiet key, turned out for the black island.
 private struct IslandButton: View {
     let title: String
     let action: () -> Void

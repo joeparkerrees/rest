@@ -8,21 +8,25 @@ struct Sight: Equatable {
     let thing: String
     /// The pictogram's name under Sights in the asset catalog.
     let icon: String
+    /// How far the drawing's lowest point sits above the bottom of its
+    /// 196-unit square, so it can stand on the horizon. Nil for things that
+    /// belong in the sky, which float above it instead.
+    let foot: CGFloat?
 
     static let all: [Sight] = [
-        Sight(thing: "a church spire", icon: "spire"),
-        Sight(thing: "the top of a tree", icon: "tree"),
-        Sight(thing: "a cloud", icon: "cloud"),
-        Sight(thing: "a bird", icon: "bird"),
-        Sight(thing: "a plane", icon: "plane"),
-        Sight(thing: "a crane", icon: "crane"),
-        Sight(thing: "the tallest building you can see", icon: "building"),
-        Sight(thing: "a chimney", icon: "chimney"),
-        Sight(thing: "the horizon", icon: "horizon"),
-        Sight(thing: "the furthest hill you can see", icon: "hill"),
-        Sight(thing: "a car going by", icon: "car"),
-        Sight(thing: "a dog out for a walk", icon: "dog"),
-        Sight(thing: "people across the street", icon: "people"),
+        Sight(thing: "a church spire", icon: "spire", foot: 14),
+        Sight(thing: "the top of a tree", icon: "tree", foot: 14),
+        Sight(thing: "a cloud", icon: "cloud", foot: nil),
+        Sight(thing: "a bird", icon: "bird", foot: nil),
+        Sight(thing: "a plane", icon: "plane", foot: nil),
+        Sight(thing: "a crane", icon: "crane", foot: 9),
+        Sight(thing: "the tallest building you can see", icon: "building", foot: 16),
+        Sight(thing: "a chimney", icon: "chimney", foot: 18),
+        Sight(thing: "the horizon", icon: "horizon", foot: 14),
+        Sight(thing: "the furthest hill you can see", icon: "hill", foot: 14),
+        Sight(thing: "a car going by", icon: "car", foot: 16),
+        Sight(thing: "a dog out for a walk", icon: "dog", foot: nil),
+        Sight(thing: "people across the street", icon: "people", foot: 15),
     ]
 
     /// Any of them except the one from the last break.
@@ -33,6 +37,7 @@ struct Sight: Equatable {
 
 struct SightIcon: View {
     let icon: String
+    var size: CGFloat = 44
 
     var body: some View {
         Image("Sights/\(icon)")
@@ -40,7 +45,22 @@ struct SightIcon: View {
             .resizable()
             .interpolation(.high)
             .scaledToFit()
-            .frame(width: 44, height: 44)
+            .frame(width: size, height: size)
             .accessibilityHidden(true)
+    }
+}
+
+/// A sight in the landscape, in the land's colour: standing on the horizon
+/// with its foot on the line, or up in the sky if it flies. Place it with
+/// its frame's bottom edge on the horizon.
+struct SightFigure: View {
+    let sight: Sight
+    var size: CGFloat
+
+    var body: some View {
+        SightIcon(icon: sight.icon, size: size)
+            .foregroundStyle(Theme.land)
+            // One unit past the foot, so the figure overlaps the land with no seam.
+            .offset(y: sight.foot.map { ($0 + 1) / 196 * size } ?? -size * 0.6)
     }
 }

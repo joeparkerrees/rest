@@ -6,6 +6,9 @@ import AppKit
 /// stopped for any other reason.
 enum MenuBarIcon {
     enum Mark: CaseIterable {
+        /// The panel's picture in small: a rounded frame with the land
+        /// filled along the bottom and the sun in the sky.
+        case picture
         /// A ring with its lower half filled: an eyelid closing, or the sun going down.
         case lid
         /// A solid disc with a slot knocked out: a closed eye.
@@ -14,7 +17,7 @@ enum MenuBarIcon {
         case bead
     }
 
-    static let mark: Mark = .lid
+    static let mark: Mark = .picture
 
     static func image(text: String, dimmed: Bool, mark: Mark = mark) -> NSImage {
         let font = NSFont.menuBarFont(ofSize: 0)
@@ -53,6 +56,17 @@ enum MenuBarIcon {
         NSColor.black.set()
         let disc = box.insetBy(dx: 0.5, dy: 0.5)
         switch mark {
+        case .picture:
+            // The stroke's outer edge sits half a point in, like the other marks.
+            let frame = box.insetBy(dx: 1.15, dy: 1.15)
+            let outline = NSBezierPath(roundedRect: frame, xRadius: 3, yRadius: 3)
+            outline.lineWidth = 1.3
+            outline.stroke()
+            NSGraphicsContext.saveGraphicsState()
+            NSBezierPath(roundedRect: frame, xRadius: 3, yRadius: 3).addClip()
+            NSBezierPath(rect: CGRect(x: box.minX, y: box.minY, width: box.width, height: 5.5)).fill()
+            NSGraphicsContext.restoreGraphicsState()
+            NSBezierPath(ovalIn: CGRect(x: box.minX + 7.6, y: box.minY + 7.4, width: 3.2, height: 3.2)).fill()
         case .lid:
             let outline = NSBezierPath(ovalIn: disc.insetBy(dx: 0.6, dy: 0.6))
             outline.lineWidth = 1.2

@@ -9,12 +9,12 @@
 /* Begin PBXBuildFile section */
 		06917F212C34E6A1828EF786 /* Cursor.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1BBEA972CAC16C603CE57496 /* Cursor.swift */; };
 		190830230A6F5951DBCEDB86 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 33495BCAB416E1CEE842DB65 /* Assets.xcassets */; };
+		1D2F3052ED40A57F845DD506 /* Horizon.swift in Sources */ = {isa = PBXBuildFile; fileRef = 77A29EB8C00737785514796A /* Horizon.swift */; };
 		2ED72DC445738B8E84A951D3 /* Snapshot.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBC5B81CD33E30A4962BF619 /* Snapshot.swift */; };
 		4214531D8A4D787EA1737255 /* Rest.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6D5A98536389B34AAEE5308 /* Rest.swift */; };
 		6F74D90CFCBBC36E2D01116F /* Activity.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0AF0C9CCFE892F3775739C8F /* Activity.swift */; };
 		7F2F0E702CFA8F391C0B2CCC /* Island.swift in Sources */ = {isa = PBXBuildFile; fileRef = 39A0B8E61EA55757F0FAE54E /* Island.swift */; };
 		81449F67250407D19ECA9FAC /* BreakScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = A906338C94FF9834F0C4EB22 /* BreakScreen.swift */; };
-		89F1782DE9397DAB24F08DCC /* Dial.swift in Sources */ = {isa = PBXBuildFile; fileRef = 821E89A365223F47F1901D2E /* Dial.swift */; };
 		9648C7654A0EF2C88AF09E8F /* Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = 282423BDF4B4D157888A67C9 /* Theme.swift */; };
 		B4CCE72F0C290163D56D7FED /* MenuBarIcon.swift in Sources */ = {isa = PBXBuildFile; fileRef = E630508C0E8F3C7A8204A9F1 /* MenuBarIcon.swift */; };
 		CCB0DB9BB3B6BB3D32A158D6 /* RestApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 32BB65C858670AB7D50046A9 /* RestApp.swift */; };
@@ -32,7 +32,7 @@
 		33495BCAB416E1CEE842DB65 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		39A0B8E61EA55757F0FAE54E /* Island.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Island.swift; sourceTree = "<group>"; };
 		443C5DA535C65177B6AF1860 /* Rest.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Rest.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		821E89A365223F47F1901D2E /* Dial.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Dial.swift; sourceTree = "<group>"; };
+		77A29EB8C00737785514796A /* Horizon.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Horizon.swift; sourceTree = "<group>"; };
 		854506F5C61699706F2D46D4 /* Rest.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Rest.entitlements; sourceTree = "<group>"; };
 		A906338C94FF9834F0C4EB22 /* BreakScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BreakScreen.swift; sourceTree = "<group>"; };
 		ADC43003315F5E2DA9182DA2 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
@@ -51,7 +51,7 @@
 				33495BCAB416E1CEE842DB65 /* Assets.xcassets */,
 				A906338C94FF9834F0C4EB22 /* BreakScreen.swift */,
 				1BBEA972CAC16C603CE57496 /* Cursor.swift */,
-				821E89A365223F47F1901D2E /* Dial.swift */,
+				77A29EB8C00737785514796A /* Horizon.swift */,
 				ADC43003315F5E2DA9182DA2 /* Info.plist */,
 				39A0B8E61EA55757F0FAE54E /* Island.swift */,
 				2ECC0E41EA24091000070C07 /* MeetingDetector.swift */,
@@ -156,7 +156,7 @@
 				6F74D90CFCBBC36E2D01116F /* Activity.swift in Sources */,
 				81449F67250407D19ECA9FAC /* BreakScreen.swift in Sources */,
 				06917F212C34E6A1828EF786 /* Cursor.swift in Sources */,
-				89F1782DE9397DAB24F08DCC /* Dial.swift in Sources */,
+				1D2F3052ED40A57F845DD506 /* Horizon.swift in Sources */,
 				7F2F0E702CFA8F391C0B2CCC /* Island.swift in Sources */,
 				E067977231B3B5F37B3C17F6 /* MeetingDetector.swift in Sources */,
 				B4CCE72F0C290163D56D7FED /* MenuBarIcon.swift in Sources */,

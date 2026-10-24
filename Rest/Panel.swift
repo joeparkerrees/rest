@@ -1,21 +1,21 @@
 import AppKit
 import SwiftUI
 
-/// Everything that drops out of the menu bar, laid out like Tuner: the dial,
-/// a row of keys, a white card of rows, and a footer.
+/// Everything that drops out of the menu bar: the picture, a row of keys,
+/// a white card of rows, and a footer, on the haze.
 struct Panel: View {
     @Bindable var rest: Rest
 
     var body: some View {
         VStack(spacing: Theme.gutter) {
-            ClockDial(rest: rest)
+            HorizonScene(rest: rest)
             Keys(rest: rest)
             Rows(rest: rest)
             Footer(rest: rest)
         }
         .padding(Theme.gutter)
         .frame(width: Theme.panelWidth)
-        .background(Theme.ground)
+        .background(Theme.haze)
         .onKeyPress(characters: ["q"]) { press in
             guard press.modifiers.contains(.command) else { return .ignored }
             NSApp.terminate(nil)
@@ -48,7 +48,7 @@ private struct Keys: View {
     }
 }
 
-/// Tuner's round ink key: pause the clock for an hour, or start it again.
+/// The round land-green key: pause the clock for an hour, or start it again.
 private struct PauseKey: View {
     let rest: Rest
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
@@ -56,9 +56,9 @@ private struct PauseKey: View {
     var body: some View {
         Button(action: rest.togglePause) {
             ZStack {
-                Circle().fill(Theme.ink)
+                Circle().fill(Theme.key)
                 PauseGlyph(play: rest.isPaused ? 1 : 0)
-                    .fill(Theme.paper)
+                    .fill(Theme.onLand)
                     .animation(reduceMotion ? .easeOut(duration: 0.12) : .snappy(duration: 0.24), value: rest.isPaused)
             }
             .frame(width: 34, height: 34)
@@ -127,11 +127,11 @@ private struct Rows: View {
     }
 
     private var divider: some View {
-        Rectangle().fill(Theme.ground).frame(height: 1).padding(.leading, 48)
+        Rectangle().fill(Theme.haze).frame(height: 1).padding(.leading, 48)
     }
 }
 
-/// A Tuner channel row: a 26pt badge, a title and a grey line under it.
+/// A row: a 26pt badge, a title and a grey line under it.
 private struct Row<Badge: View>: View {
     let title: String
     let detail: String

@@ -1,94 +1,105 @@
 import AppKit
 import SwiftUI
 
-/// The break covers every display with the ground colour. The main display
-/// shows the time left on the dial and something to look at out of the
-/// window. Esc twice, or Skip, ends it once the first few seconds are up.
+/// The break covers every display with the landscape: sky over land. The
+/// main display has the time left in the sky, the sight to look for on the
+/// horizon, and the sun going down as the break runs out. Esc twice, or
+/// Skip, ends it once the first few seconds are up.
 struct BreakScreen: View {
     let rest: Rest
     let sight: Sight
-    /// Only the main display carries the dial and controls.
+    /// Only the main display carries the time, the sight and the controls.
     var isMain = true
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var shown = false
 
+    /// The land's share of the screen's height.
+    static let land: CGFloat = 0.32
+
     var body: some View {
         GeometryReader { geometry in
-            ZStack {
-                Theme.ground.ignoresSafeArea()
+            let size = geometry.size
+            let horizon = size.height * (1 - Self.land)
+            ZStack(alignment: .topLeading) {
+                Theme.sky
                 if isMain {
-                    VStack(spacing: 0) {
-                        Spacer(minLength: 32)
-                        clock.frame(width: 240, height: 240)
-                        suggestion
-                            .padding(.top, 32)
-                        Spacer(minLength: 24)
-                        SkipKey(rest: rest)
-                            .padding(.bottom, 32)
-                    }
-                    .frame(maxWidth: .infinity)
-                    .opacity(shown ? 1 : 0)
-                    .offset(y: shown || reduceMotion ? 0 : 6)
+                    BreakSun(progress: rest.progress, size: size, horizon: horizon)
+                }
+                Theme.land
+                    .frame(height: size.height - horizon)
+                    .frame(maxHeight: .infinity, alignment: .bottom)
+                if isMain {
+                    foreground(size: size, horizon: horizon)
+                        .opacity(shown ? 1 : 0)
+                        .offset(y: shown || reduceMotion ? 0 : 6)
                 }
             }
         }
+        .ignoresSafeArea()
         .onAppear {
-            // The window fades in first; the card settles in just behind it.
+            // The window fades in first; the sight and the time settle in
+            // just behind it.
             withAnimation(Theme.settle.delay(0.12)) { shown = true }
         }
+        .accessibilityElement(children: .contain)
     }
 
-    private var suggestion: some View {
-        VStack(spacing: 8) {
-            SightIcon(icon: sight.icon)
-            Text("Try and look at \(sight.thing)")
-                .font(.system(size: 15))
+    private func foreground(size: CGSize, horizon: CGFloat) -> some View {
+        let figure = (size.height * 0.16).rounded()
+        return ZStack(alignment: .topLeading) {
+            SightFigure(sight: sight, size: figure)
+                .position(x: size.width / 2, y: horizon - figure / 2)
+            clock
+                .position(x: size.width / 2, y: horizon * 0.36)
+            VStack(spacing: 0) {
+                Text("Try and look at \(sight.thing)")
+                    .font(.system(size: 17))
+                    .foregroundStyle(Theme.onLand)
+                    .multilineTextAlignment(.center)
+                    .padding(.top, (size.height - horizon) * 0.24)
+                Spacer(minLength: 24)
+                SkipKey(rest: rest)
+                    .padding(.bottom, 32)
+            }
+            .frame(width: size.width, height: size.height - horizon)
+            .offset(y: horizon)
         }
-        .foregroundStyle(Theme.ink)
-        .multilineTextAlignment(.center)
-        .accessibilityElement(children: .combine)
+        .frame(width: size.width, height: size.height)
     }
 
     private var clock: some View {
         let isLong = if case let .onBreak(long, _, _) = rest.phase { long } else { false }
-        return BreakDial(progress: rest.progress, remaining: rest.breakRemaining, label: isLong ? "Long break" : "Short break")
-    }
-
-}
-
-/// The break's time on a small version of the panel dial: dots round the
-/// edge, the bead riding round as the break runs, the time in the middle.
-struct BreakDial: View {
-    let progress: Double
-    let remaining: TimeInterval
-    let label: String
-
-    var body: some View {
-        GeometryReader { geometry in
-            let size = min(geometry.size.width, geometry.size.height)
-            ZStack {
-                Circle().fill(Theme.paper)
-                DotRing(count: 24, lit: 0)
-                Bead(hollow: false)
-                    .offset(y: -(size / 2 - 12))
-                    .rotationEffect(.degrees(progress * 360))
-                    .animation(.linear(duration: 1), value: progress)
-                VStack(spacing: 2) {
-                    Text(Clock.format(remaining))
-                        .font(.system(size: size / 6, weight: .light))
-                        .monospacedDigit()
-                        .foregroundStyle(Theme.ink)
-                        .contentTransition(.numericText(countsDown: true))
-                    Text(label)
-                        .font(.system(size: max(11, size / 18)))
-                        .foregroundStyle(Theme.muted)
-                }
-            }
-            .frame(width: size, height: size)
+        return VStack(spacing: 4) {
+            Text(Clock.format(rest.breakRemaining))
+                .font(.system(size: 72, weight: .light))
+                .monospacedDigit()
+                .foregroundStyle(Theme.ink)
+                .contentTransition(.numericText(countsDown: true))
+                .animation(.easeOut(duration: 0.2), value: Int(rest.breakRemaining.rounded(.up)))
+            Text(isLong ? "Long break" : "Short break")
+                .font(.system(size: 15))
+                .foregroundStyle(Theme.muted)
         }
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel(label)
-        .accessibilityValue("\(Int(remaining.rounded())) seconds left")
+        .accessibilityLabel(isLong ? "Long break" : "Short break")
+        .accessibilityValue("\(Int(rest.breakRemaining.rounded())) seconds left")
+    }
+}
+
+/// The sun on the break screen, right of the sight. It starts high and sets
+/// behind the land as the break runs out, a second of travel per tick.
+struct BreakSun: View {
+    let progress: Double
+    let size: CGSize
+    let horizon: CGFloat
+
+    var body: some View {
+        let diameter = (size.height * 0.07).rounded()
+        let high = horizon * 0.3
+        let below = horizon + diameter / 2 + 1
+        Sun(size: diameter)
+            .position(x: size.width * 0.7, y: high + (below - high) * min(1, progress))
+            .animation(.linear(duration: 1), value: progress)
     }
 }
 
@@ -106,10 +117,10 @@ private struct SkipKey: View {
                 .frame(minWidth: 88, minHeight: 30)
                 .contentShape(Rectangle())
         }
-        .buttonStyle(QuietKey(fill: fill))
+        .buttonStyle(LandKey(fill: fill))
         .disabled(!unlocked)
         .font(.system(size: 12))
-        .foregroundStyle(unlocked ? Theme.ink : Theme.muted)
+        .foregroundStyle(Theme.onLand.opacity(unlocked ? 1 : 0.55))
         .animation(.easeOut(duration: 0.15), value: unlocked)
         .help("Or press Esc twice")
         .accessibilityHint(unlocked ? "" : "Available after the first few seconds")
@@ -124,6 +135,33 @@ private struct SkipKey: View {
             try? await Task.sleep(for: .seconds(left))
             unlocked = true
         }
+    }
+}
+
+/// A key standing on the land: a hairline capsule in the sky's colour, with
+/// the lock's fill drawn in it from the left edge.
+struct LandKey: ButtonStyle {
+    /// How much of the key is filled, from the left edge.
+    var fill: CGFloat = 0
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
+    func makeBody(configuration: Configuration) -> some View {
+        let pressed = configuration.isPressed
+        return configuration.label
+            .padding(.horizontal, 12)
+            .background {
+                Capsule()
+                    .fill(Theme.onLand.opacity(pressed ? 0.16 : 0.06))
+                    .overlay(alignment: .leading) {
+                        Rectangle()
+                            .fill(Theme.onLand.opacity(0.2))
+                            .scaleEffect(x: fill, anchor: .leading)
+                    }
+                    .clipShape(Capsule())
+            }
+            .overlay(Capsule().strokeBorder(Theme.onLand.opacity(0.35), lineWidth: 1))
+            .scaleEffect(pressed && !reduceMotion ? 0.96 : 1)
+            .animation(pressed ? Theme.keyDown : Theme.keyUp, value: pressed)
     }
 }
 
@@ -299,7 +337,7 @@ private struct WarningPill: View {
     var body: some View {
         Button(action: postpone) {
             HStack(spacing: 8) {
-                Circle().fill(Theme.ink).frame(width: 7, height: 7)
+                Sun(size: 8)
                 Text("Break in \(model.seconds)")
                     .monospacedDigit()
                     .foregroundStyle(Theme.ink)

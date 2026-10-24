@@ -1,16 +1,15 @@
 import AppKit
 import SwiftUI
 
-/// The last few seconds before a break, beside the pointer: a small copy of
-/// the dial with the seconds in the middle and the bead going once round as
-/// they run out. It's there so a break doesn't start without warning while
-/// you're looking nowhere near the notch. It follows the pointer from screen to screen, never takes clicks,
+/// The last few seconds before a break, beside the pointer: the red sun
+/// with the seconds counting down in it. It's there so a break doesn't start
+/// without warning while you're looking nowhere near the notch. It follows the pointer from screen to screen, never takes clicks,
 /// and moves to the other side of the pointer near a screen's edge.
 @MainActor
 final class CursorCountdown: NSObject {
-    static let size: CGFloat = 40
+    static let size: CGFloat = 30
     /// From the pointer's hotspot to the dial's centre, clear of the arrow.
-    static let offset: CGFloat = 34
+    static let offset: CGFloat = 30
     /// Room round the dial for its shadow.
     static let margin: CGFloat = 10
 
@@ -20,15 +19,13 @@ final class CursorCountdown: NSObject {
     private var pointer: NSPoint?
     private var generation = 0
 
-    /// Counts down to `until`. The bead goes once round in `length`, so if it
-    /// appears late, after you've been away, it starts part way round.
-    func show(until: Date, length: TimeInterval) {
+    /// Counts down to `until`.
+    func show(until: Date) {
         // The clock ticks once a second, a fraction early or late; only a
         // real change moves the bead.
         if model.shown, abs(until.timeIntervalSince(model.until)) < 1 { return }
         generation += 1
         model.until = until
-        model.start = until.addingTimeInterval(-length)
         let panel = self.panel ?? makePanel()
         pointer = nil
         follow()
@@ -102,8 +99,7 @@ final class CursorCountdown: NSObject {
 @Observable
 final class CursorModel {
     var shown = false
-    /// When the bead set off from twelve, and when it gets back there.
-    var start = Date()
+    /// When the break starts.
     var until = Date()
 }
 
@@ -113,9 +109,8 @@ private struct CursorCountdownView: View {
 
     var body: some View {
         TimelineView(.animation(paused: !model.shown)) { context in
-            let length = max(1, model.until.timeIntervalSince(model.start))
             let left = max(0, model.until.timeIntervalSince(context.date))
-            CursorDial(progress: min(1, 1 - left / length), seconds: Int(left.rounded(.up)))
+            CursorDial(seconds: Int(left.rounded(.up)))
         }
         .opacity(model.shown ? 1 : 0)
         .scaleEffect(model.shown || reduceMotion ? 1 : 0.9)
@@ -124,32 +119,20 @@ private struct CursorCountdownView: View {
     }
 }
 
-/// The dial at 40 points: twelve dots for a clock face, turning from faint to
-/// muted as the time passes, and a smaller bead so it doesn't crowd the digits.
+/// The sun at 30 points with the seconds in it, white on red so it stands
+/// out over whatever's under the pointer.
 struct CursorDial: View {
-    let progress: Double
     let seconds: Int
     var size: CGFloat = CursorCountdown.size
 
     var body: some View {
-        ZStack {
-            Circle()
-                .fill(Theme.paper)
-                .overlay(Circle().strokeBorder(Theme.line, lineWidth: 1))
-                .shadow(color: .black.opacity(0.14), radius: 5, y: 2)
-            DotRing(count: 12, lit: Int(progress * 12), inset: 6)
-            Circle()
-                .fill(Theme.ink)
-                .frame(width: 5, height: 5)
-                .offset(y: -(size / 2 - 6))
-                .rotationEffect(.degrees(progress * 360))
-            Text("\(seconds)")
-                .font(.system(size: 13, weight: .medium))
-                .monospacedDigit()
-                .foregroundStyle(Theme.ink)
-                .contentTransition(.numericText(countsDown: true))
-                .animation(.easeOut(duration: 0.2), value: seconds)
-        }
-        .frame(width: size, height: size)
+        Text("\(seconds)")
+            .font(.system(size: 13, weight: .semibold))
+            .monospacedDigit()
+            .foregroundStyle(.white)
+            .contentTransition(.numericText(countsDown: true))
+            .animation(.easeOut(duration: 0.2), value: seconds)
+            .frame(width: size, height: size)
+            .background(Circle().fill(Theme.red).shadow(color: .black.opacity(0.18), radius: 4, y: 1.5))
     }
 }
