@@ -1,0 +1,39 @@
+name: Rest
+options:
+  bundleIdPrefix: com.joeparkerrees
+  deploymentTarget:
+    macOS: "14.0"
+  xcodeVersion: "27.0"
+  minimumXcodeGenVersion: "2.40"
+
+targets:
+  Rest:
+    type: application
+    platform: macOS
+    info:
+      path: Rest/Info.plist
+      properties:
+        # Menu bar only: no Dock icon, no app menu.
+        LSUIElement: true
+        LSApplicationCategoryType: public.app-category.healthcare-fitness
+        CFBundleDisplayName: Rest
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
+    entitlements:
+      path: Rest/Rest.entitlements
+      # Not sandboxed: reading which process holds the mic (proc_pidpath)
+      # and the display-sleep assertions both need to see other apps.
+      properties: {}
+    sources:
+      - path: Rest
+        excludes:
+          - "**/.DS_Store"
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.joeparkerrees.rest
+        MARKETING_VERSION: "0.1.0"
+        CURRENT_PROJECT_VERSION: 1
+        SWIFT_VERSION: "6.0"
+        ENABLE_HARDENED_RUNTIME: YES
+        CODE_SIGN_STYLE: Manual
+        CODE_SIGN_IDENTITY: "-"
