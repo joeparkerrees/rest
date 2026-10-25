@@ -2,8 +2,8 @@ import AppKit
 import SwiftUI
 
 /// The break covers every display with the landscape: sky over land. The
-/// main display has the time left in the sky, the sight to look for on the
-/// horizon, and the sun going down as the break runs out. Esc twice, or
+/// main display has the time left in the sky, and the sight to look for on
+/// the horizon in front of the sun, which goes down as the break runs out. Esc twice, or
 /// Skip, ends it once the first few seconds are up.
 struct BreakScreen: View {
     let rest: Rest
@@ -47,7 +47,9 @@ struct BreakScreen: View {
     private func foreground(size: CGSize, horizon: CGFloat) -> some View {
         let figure = (size.height * 0.16).rounded()
         return ZStack(alignment: .topLeading) {
-            SightFigure(sight: sight, size: figure)
+            // Things that fly go up and to the right of the sun.
+            SightFigure(sight: sight, size: figure,
+                        flight: CGSize(width: BreakSun.diameter(size) * 0.8, height: -BreakSun.diameter(size) * 0.7))
                 .position(x: size.width / 2, y: horizon - figure / 2)
             clock
                 .position(x: size.width / 2, y: horizon * 0.36)
@@ -86,19 +88,24 @@ struct BreakScreen: View {
     }
 }
 
-/// The sun on the break screen, right of the sight. It starts high and sets
-/// behind the land as the break runs out, a second of travel per tick.
+/// The sun on the break screen, behind the sight. It starts sitting just
+/// above the horizon, where the panel's sun was when the break came due, and
+/// sets behind the land as the break runs out, a second of travel per tick.
 struct BreakSun: View {
     let progress: Double
     let size: CGSize
     let horizon: CGFloat
 
+    static func diameter(_ size: CGSize) -> CGFloat {
+        (size.height * 0.26).rounded()
+    }
+
     var body: some View {
-        let diameter = (size.height * 0.07).rounded()
-        let high = horizon * 0.3
-        let below = horizon + diameter / 2 + 1
+        let diameter = Self.diameter(size)
+        let risen = horizon - diameter / 2 - diameter * 0.1
+        let set = horizon + diameter / 2 + 1
         Sun(size: diameter)
-            .position(x: size.width * 0.7, y: high + (below - high) * min(1, progress))
+            .position(x: size.width / 2, y: risen + (set - risen) * min(1, progress))
             .animation(.linear(duration: 1), value: progress)
     }
 }

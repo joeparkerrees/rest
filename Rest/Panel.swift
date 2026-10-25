@@ -235,13 +235,13 @@ private struct CallRow: View {
     }
 
     private func detail(mic: MeetingDetector.Microphone?) -> String {
-        if meetings.inMeeting { return "Breaks wait until it’s over" }
+        if meetings.inMeeting { return "Breaks start after the call" }
         if let ignoredApp { return "\(ignoredApp.name) is ignored. Click to count it" }
         if meetings.microphones.contains(where: \.running), let app = meetings.micApps.first(where: { meetings.ignoredUntilBreak.contains($0.key) }) {
             return "\(app.name) is ignored till the next break"
         }
         if meetings.microphones.contains(where: \.running), let other = meetings.micApps.first {
-            return other.isSystem && other.name != "Siri" ? "The system has the mic, not a call" : "\(other.name) has the mic, not a call"
+            return other.isSystem && other.name != "Siri" ? "The system is using the mic" : "\(other.name) is using the mic"
         }
         guard let mic else { return "No microphone found" }
         let others = meetings.microphones.count - 1

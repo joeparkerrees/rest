@@ -1,20 +1,21 @@
 import SwiftUI
 
 /// The panel's picture: a pale sky over the land, with the sight for your
-/// next break standing on the horizon. The sun comes up from behind the land
-/// as the minutes of work go by, and it's at the top when the break is due.
-/// During a break it goes back down. It goes hollow while the clock is
-/// stopped: paused, away, or holding a break for a call. The time sits in
-/// the sky on the left.
+/// next break standing on the horizon in front of a big red sun. The sun
+/// comes up from behind the land as the minutes of work go by, and it's
+/// sitting on the horizon when the break is due. During a break it goes back
+/// down. It goes pale while the clock is stopped: paused, away, or holding
+/// a break for a call. The time sits in the sky on the left.
 struct HorizonScene: View {
     let rest: Rest
     var width: CGFloat = Theme.panelWidth - Theme.gutter * 2
 
     static let height: CGFloat = 184
     static let land: CGFloat = 46
-    static let sunSize: CGFloat = 18
-    /// The sun's centre at noon, from the top of the picture.
-    static let noon: CGFloat = 26
+    static let sunSize: CGFloat = 64
+    static let figure: CGFloat = 40
+    /// The sun and the sight share a centre line this far in from the right.
+    static let inset: CGFloat = 58
 
     private var horizon: CGFloat { Self.height - Self.land }
 
@@ -23,19 +24,22 @@ struct HorizonScene: View {
         rest.isPaused || rest.away || rest.hold != nil
     }
 
-    /// Down from the top: just under the horizon at the start of the work,
-    /// noon when the break is due, and back under by the end of the break.
+    /// Down from the top: under the land at the start of the work, sitting
+    /// just above the horizon when the break is due, and back under by the
+    /// end of the break.
     private var sunY: CGFloat {
-        let below = horizon + Self.sunSize / 2 + 1
-        let height = rest.isOnBreak ? rest.progress : 1 - rest.progress
-        return Self.noon + (below - Self.noon) * height
+        let set = horizon + Self.sunSize / 2 + 1
+        let risen = horizon - Self.sunSize / 2 - Self.sunSize * 0.1
+        let up = rest.isOnBreak ? 1 - rest.progress : rest.progress
+        return set + (risen - set) * up
     }
 
     var body: some View {
-        ZStack(alignment: .topLeading) {
+        let centre = width - Self.inset
+        return ZStack(alignment: .topLeading) {
             Theme.sky
-            Sun(size: Self.sunSize, hollow: stopped)
-                .position(x: width - 46, y: sunY)
+            Sun(size: Self.sunSize, dimmed: stopped)
+                .position(x: centre, y: sunY)
                 // One second of travel per tick reads as steady; a reset at
                 // the end of a break should jump, not sweep.
                 .animation(rest.progress > 0.002 ? .linear(duration: 1) : nil, value: sunY)
@@ -43,10 +47,13 @@ struct HorizonScene: View {
             Theme.land
                 .frame(height: Self.land)
                 .frame(maxHeight: .infinity, alignment: .bottom)
-            SightFigure(sight: rest.nextSight, size: 30)
-                .position(x: width - 110, y: horizon - 15)
+            // Things that fly go above the sun, clear of it at its highest.
+            SightFigure(sight: rest.nextSight, size: Self.figure,
+                        flight: CGSize(width: -Self.sunSize * 0.2, height: -Self.sunSize * 1.2))
+                .position(x: centre, y: horizon - Self.figure / 2)
+            // Kept clear of the sun's left edge, so the longer lines wrap.
             Readout(rest: rest)
-                .frame(width: width - 76, alignment: .leading)
+                .frame(width: centre - Self.sunSize / 2 - 24, alignment: .leading)
                 .padding(.leading, 16)
                 .padding(.top, 18)
         }
@@ -59,17 +66,16 @@ struct HorizonScene: View {
     }
 }
 
-/// The red sun: solid while the clock runs, a ring while it's stopped.
+/// The red sun, paler while the clock is stopped.
 struct Sun: View {
     var size: CGFloat
-    var hollow = false
+    var dimmed = false
 
     var body: some View {
-        ZStack {
-            Circle().fill(Theme.red).opacity(hollow ? 0 : 1)
-            Circle().strokeBorder(Theme.red, lineWidth: max(1.5, size / 12)).opacity(hollow ? 1 : 0)
-        }
-        .frame(width: size, height: size)
+        Circle()
+            .fill(Theme.red)
+            .opacity(dimmed ? 0.3 : 1)
+            .frame(width: size, height: size)
     }
 }
 
@@ -119,7 +125,8 @@ private struct Readout: View {
     private var detail: String {
         if rest.isOnBreak { return "Esc twice to skip" }
         if let until = rest.pausedUntil { return "Until \(until.formatted(date: .omitted, time: .shortened))" }
-        if rest.hold != nil { return "The break waits until it’s over" }
+        if case .call = rest.hold { return "The break starts after the call" }
+        if case .video = rest.hold { return "The break starts after the video" }
         if rest.away { return "The clock stops while you’re away" }
         return rest.nextIsLong ? "until a long break" : "until a short break"
     }

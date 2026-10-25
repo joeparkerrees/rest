@@ -50,17 +50,18 @@ struct SightIcon: View {
     }
 }
 
-/// A sight in the landscape, in the land's colour: standing on the horizon
-/// with its foot on the line, or up in the sky if it flies. Place it with
-/// its frame's bottom edge on the horizon.
+/// A sight in the landscape, in the land's colour, standing on the horizon
+/// with its foot on the line. Place it with its frame's bottom edge on the
+/// horizon. Things that fly are moved by `flight` from there instead.
 struct SightFigure: View {
     let sight: Sight
     var size: CGFloat
+    let flight: CGSize
 
     var body: some View {
         SightIcon(icon: sight.icon, size: size)
             .foregroundStyle(Theme.land)
             // One unit past the foot, so the figure overlaps the land with no seam.
-            .offset(y: sight.foot.map { ($0 + 1) / 196 * size } ?? -size * 0.6)
+            .offset(sight.foot.map { CGSize(width: 0, height: ($0 + 1) / 196 * size) } ?? flight)
     }
 }

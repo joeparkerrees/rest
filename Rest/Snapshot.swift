@@ -20,6 +20,8 @@ enum Snapshot {
             ("call", { $0.meetings.seedForSnapshot(microphone: mic, callIn: zoom); $0.seedForSnapshot(worked: 20 * 60, hold: .call("Zoom")) }),
             ("away", { $0.seedForSnapshot(worked: 13 * 60, away: true) }),
             ("paused", { $0.seedForSnapshot(worked: 4 * 60, paused: true) }),
+            // A sight that flies, with the sun nearly up.
+            ("plane", { $0.seedForSnapshot(worked: 19 * 60 + 30, sight: Sight.all[4]) }),
         ]
         for (name, seed) in states {
             let rest = Rest(defaults: defaults)

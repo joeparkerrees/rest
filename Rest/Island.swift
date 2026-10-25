@@ -97,7 +97,7 @@ final class Island {
         present(over: notch.frame)
         set(.expanded, .call)
         dismiss(after: 8, generation: generation)
-        announce("\(call.title). Your break will wait.")
+        announce("\(call.title). Your break starts after the call.")
     }
 
     func hideNotice() {
@@ -361,7 +361,7 @@ struct IslandView: View {
                     Text(model.call?.title ?? "")
                         .font(.system(size: 13, weight: .medium))
                         .foregroundStyle(.white)
-                    Text("Your break will wait until you’re done")
+                    Text("Your break starts after the call")
                         .font(.system(size: 11))
                         .foregroundStyle(.white.opacity(0.55))
                 }
