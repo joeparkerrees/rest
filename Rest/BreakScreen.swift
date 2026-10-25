@@ -338,3 +338,95 @@ private struct WarningPill: View {
         .animation(.easeOut(duration: 0.12), value: hovering)
     }
 }
+
+/// The posture reminder on a Mac without a notch: a white capsule under the
+/// menu bar, in the warning's place. It goes after six seconds, or when you
+/// click it, but stays while the pointer is on it.
+@MainActor
+final class PostureWindow {
+    private var panel: NSPanel?
+    private var hovering = false
+    private var generation = 0
+
+    func show() {
+        let panel = self.panel ?? makePanel()
+        guard let screen = NSScreen.main else { return }
+        generation += 1
+        let frame = screen.visibleFrame
+        panel.setFrameOrigin(NSPoint(x: frame.midX - panel.frame.width / 2, y: frame.maxY - panel.frame.height - 10))
+        if !panel.isVisible { panel.alphaValue = 0 }
+        panel.orderFrontRegardless()
+        NSAnimationContext.runAnimationGroup { context in
+            context.duration = 0.22
+            context.timingFunction = CAMediaTimingFunction(controlPoints: 0.23, 1, 0.32, 1)
+            panel.animator().alphaValue = 1
+        }
+        hide(after: 6, generation: generation)
+    }
+
+    func hide() {
+        guard let panel, panel.isVisible else { return }
+        generation += 1
+        NSAnimationContext.runAnimationGroup({ context in
+            context.duration = 0.12
+            panel.animator().alphaValue = 0
+        }, completionHandler: {
+            MainActor.assumeIsolated { panel.orderOut(nil) }
+        })
+    }
+
+    private func hide(after seconds: TimeInterval, generation current: Int) {
+        DispatchQueue.main.asyncAfter(deadline: .now() + seconds) { [weak self] in
+            MainActor.assumeIsolated {
+                guard let self, self.generation == current else { return }
+                if self.hovering { self.hide(after: 2, generation: current) } else { self.hide() }
+            }
+        }
+    }
+
+    private func makePanel() -> NSPanel {
+        let view = NSHostingView(rootView: PosturePill(dismiss: { [weak self] in self?.hide() }, hover: { [weak self] in self?.hovering = $0 }))
+        let size = view.fittingSize
+        let panel = NSPanel(contentRect: NSRect(origin: .zero, size: NSSize(width: size.width, height: 40)), styleMask: [.borderless, .nonactivatingPanel], backing: .buffered, defer: false)
+        panel.level = .statusBar
+        panel.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary, .stationary]
+        panel.isOpaque = false
+        panel.backgroundColor = .clear
+        panel.hasShadow = true
+        panel.contentView = view
+        self.panel = panel
+        return panel
+    }
+}
+
+struct PosturePill: View {
+    var dismiss: () -> Void = {}
+    var hover: (Bool) -> Void = { _ in }
+    @State private var hovering = false
+
+    var body: some View {
+        Button(action: dismiss) {
+            HStack(spacing: 8) {
+                PostureFigure()
+                    .fill(Theme.ink)
+                    .frame(width: 13, height: 13)
+                Text("Sit up straight")
+                    .foregroundStyle(Theme.ink)
+                Text("Let your shoulders drop")
+                    .foregroundStyle(Theme.muted)
+            }
+            .font(.system(size: 12))
+            .fixedSize()
+            .padding(.horizontal, 14)
+            .frame(maxHeight: .infinity)
+            .background(hovering ? Theme.hover : Theme.paper, in: Capsule())
+            .overlay(Capsule().strokeBorder(Theme.line, lineWidth: 1))
+            .contentShape(Capsule())
+        }
+        .buttonStyle(.plain)
+        .frame(height: 40)
+        .onHover { hovering = $0; hover($0) }
+        .animation(.easeOut(duration: 0.12), value: hovering)
+        .accessibilityLabel("Sit up straight")
+    }
+}

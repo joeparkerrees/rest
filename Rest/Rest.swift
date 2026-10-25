@@ -5,7 +5,8 @@ import ServiceManagement
 /// The work and break clock. By default that's 20 minutes of work, a
 /// 30-second break, and a 3-minute break after every third short one. It stops counting after a minute away and starts over after five.
 /// A break that comes due during a call, or while the app in front is playing
-/// video, waits until it's over.
+/// video, waits until it's over. Every 10 minutes of work there's a reminder
+/// out of the notch to sit up straight.
 @MainActor
 @Observable
 final class Rest {
@@ -35,6 +36,8 @@ final class Rest {
         var afterCall: TimeInterval
         /// How long before a break the countdown shows by the pointer; 0 turns it off.
         var cursor: TimeInterval
+        /// How much work between posture reminders.
+        var posture: TimeInterval
 
         /// Override any of them with `defaults write com.joeparkerrees.rest <key> <seconds>`.
         init(_ defaults: UserDefaults) {
@@ -52,6 +55,7 @@ final class Rest {
             skipLock = seconds("skipLock", 5)
             afterCall = seconds("afterCall", 10)
             cursor = defaults.object(forKey: "cursor") == nil ? 10 : max(0, defaults.double(forKey: "cursor"))
+            posture = seconds("posture", 10 * 60)
         }
     }
 
@@ -70,6 +74,10 @@ final class Rest {
     /// What the next break will suggest looking at. It stands on the
     /// horizon in the panel until then.
     private(set) var nextSight = Sight.pick(after: nil)
+    /// Turned on and off from the panel's footer.
+    var postureReminders: Bool {
+        didSet { defaults.set(postureReminders, forKey: "postureReminders") }
+    }
 
     let settings: Settings
     let meetings = MeetingDetector()
@@ -89,6 +97,7 @@ final class Rest {
         self.defaults = defaults
         settings = Settings(defaults)
         ignoredApps = defaults.stringArray(forKey: "ignoredApps") ?? []
+        postureReminders = defaults.object(forKey: "postureReminders") == nil ? true : defaults.bool(forKey: "postureReminders")
         meetings.excludedBundleIDs.formUnion(ignoredApps)
     }
 
@@ -224,7 +233,11 @@ final class Rest {
                 return
             }
             away = idle >= settings.pauseAfterIdle
-            if !away { worked = min(settings.work, worked + delta) }
+            if !away {
+                let before = worked
+                worked = min(settings.work, worked + delta)
+                if Int(worked / settings.posture) > Int(before / settings.posture) { remindPosture() }
+            }
 
             guard worked >= settings.work, !away else {
                 hold = nil
@@ -286,6 +299,15 @@ final class Rest {
             ignore: { [weak self] in self?.ignoreCallUntilBreak() },
             always: app.map { app in { [weak self] in self?.alwaysIgnore(app) } }
         ))
+    }
+
+    /// Sit up straight, out of the notch. Only while you're working with
+    /// nothing else on: not on a call, not with video in front, and not in
+    /// the last minute, when the notch is counting down to the break.
+    private func remindPosture() {
+        guard postureReminders, hold == nil, !meetings.inMeeting, remaining + settings.warning > 60,
+              Activity.videoInFront() == nil else { return }
+        island.posture()
     }
 
     /// The countdown by the pointer, for the last few seconds before a break

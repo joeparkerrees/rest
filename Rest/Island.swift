@@ -5,11 +5,12 @@ import SwiftUI
 /// iPhone. In the last minute before a break the notch widens a little: the
 /// mark on one side, the time until the break on the other. Five seconds out
 /// it opens down into the warning, with a key to push the break back. When a
-/// call starts it opens to say so, with a way out if it isn't a call. Macs
+/// call starts it opens with the app's name, with a way out if it isn't a
+/// call, and every 10 minutes of work it opens to remind you to sit up. Macs
 /// have no Dynamic Island of their own, so this is a black window drawn over
 /// the notch to look part of it. Without a notch on the main display, the
-/// warning is the white capsule under the menu bar instead, and calls show
-/// only in the panel.
+/// warning and the posture reminder are white capsules under the menu bar
+/// instead, and calls show only in the panel.
 @MainActor
 final class Island {
     static let flare: CGFloat = 6
@@ -34,6 +35,7 @@ final class Island {
     private let model = IslandModel()
     private var panel: IslandPanel?
     private let capsule = WarningWindow()
+    private let postureCapsule = PostureWindow()
     /// Where the island is heading; `model` is what's drawn.
     private var mode: IslandModel.Mode = .hidden
     private var content: IslandModel.Content = .countdown
@@ -104,10 +106,29 @@ final class Island {
         if content == .call { collapse() }
     }
 
+    // MARK: Posture
+
+    /// Sit up straight. Closes by itself like the call notice.
+    func posture() {
+        announce("Sit up straight")
+        guard let notch else {
+            postureCapsule.show()
+            return
+        }
+        present(over: notch.frame)
+        set(.expanded, .posture)
+        dismiss(after: 6, generation: generation)
+    }
+
+    /// The close key: shuts the call notice or the posture reminder, whichever is open.
+    private func close() {
+        if content != .countdown { collapse() }
+    }
+
     private func dismiss(after seconds: TimeInterval, generation current: Int) {
         DispatchQueue.main.asyncAfter(deadline: .now() + seconds) { [weak self] in
             MainActor.assumeIsolated {
-                guard let self, self.generation == current, self.content == .call, self.mode == .expanded else { return }
+                guard let self, self.generation == current, self.content != .countdown, self.mode == .expanded else { return }
                 if self.model.hovering {
                     self.dismiss(after: 2, generation: current)
                 } else {
@@ -186,7 +207,7 @@ final class Island {
         panel.hasShadow = false
         panel.ignoresMouseEvents = true
         panel.acceptsMouseMovedEvents = true
-        panel.contentView = NSHostingView(rootView: IslandView(model: model, close: { [weak self] in self?.hideNotice() }))
+        panel.contentView = NSHostingView(rootView: IslandView(model: model, close: { [weak self] in self?.close() }))
         self.panel = panel
         return panel
     }
@@ -206,7 +227,7 @@ final class IslandModel {
         var rank: Int { switch self { case .hidden: 0; case .compact: 1; case .expanded: 2 } }
     }
 
-    enum Content { case countdown, call }
+    enum Content { case countdown, call, posture }
 
     var mode: Mode = .hidden
     var content: Content = .countdown
@@ -270,6 +291,7 @@ struct IslandView: View {
                             switch model.content {
                             case .countdown: warning
                             case .call: notice
+                            case .posture: posture
                             }
                         }
                         .transition(.asymmetric(
@@ -306,7 +328,7 @@ struct IslandView: View {
         .frame(height: model.notch.height)
     }
 
-    /// The mark, or the app on the call.
+    /// The mark, the app on the call, or someone sitting up.
     @ViewBuilder
     private var leading: some View {
         if model.content == .call, let icon = model.call?.icon {
@@ -314,6 +336,8 @@ struct IslandView: View {
                 .resizable()
                 .interpolation(.high)
                 .frame(width: 18, height: 18)
+        } else if model.content == .posture {
+            PostureFigure().fill(.white).frame(width: 15, height: 15)
         } else {
             Image(nsImage: MenuBarIcon.markImage(size: 14))
                 .renderingMode(.template)
@@ -321,12 +345,15 @@ struct IslandView: View {
         }
     }
 
-    /// The time until the break, or the on-air light during a call.
+    /// The time until the break, or the on-air light during a call. Nothing
+    /// beside the posture reminder.
     @ViewBuilder
     private var trailing: some View {
         if model.content == .call {
             Circle().fill(Theme.red).frame(width: 6, height: 6)
                 .accessibilityHidden(true)
+        } else if model.content == .posture {
+            EmptyView()
         } else {
             Text(Clock.format(model.remaining))
                 .font(.system(size: 13, weight: .medium))
@@ -381,6 +408,23 @@ struct IslandView: View {
         .padding(.horizontal, 18)
         .padding(.top, 6)
         .frame(height: Island.noticeDrawer, alignment: .top)
+    }
+
+    private var posture: some View {
+        HStack(spacing: 12) {
+            VStack(alignment: .leading, spacing: 2) {
+                Text("Sit up straight")
+                    .font(.system(size: 13, weight: .medium))
+                    .foregroundStyle(.white)
+                Text("Let your shoulders drop")
+                    .font(.system(size: 11))
+                    .foregroundStyle(.white.opacity(0.55))
+            }
+            Spacer(minLength: 0)
+            CloseKey(action: close)
+        }
+        .padding(.horizontal, 18)
+        .frame(height: Island.drawer)
     }
 
     static func describe(_ seconds: TimeInterval) -> String {
@@ -467,6 +511,24 @@ struct IslandShape: Shape {
         path.addArc(tangent1End: CGPoint(x: right, y: rect.maxY), tangent2End: CGPoint(x: right, y: rect.maxY - r), radius: r)
         path.addArc(tangent1End: CGPoint(x: right, y: rect.minY), tangent2End: CGPoint(x: rect.maxX, y: rect.minY), radius: flare)
         path.closeSubpath()
+        return path
+    }
+}
+
+/// Someone sitting up straight, side on, drawn like the sights' pictograms:
+/// a round head over an upright back, thighs level and shins straight down.
+/// In a 14 point square.
+struct PostureFigure: Shape {
+    func path(in rect: CGRect) -> Path {
+        let u = rect.width / 14
+        func box(_ x: CGFloat, _ y: CGFloat, _ width: CGFloat, _ height: CGFloat) -> CGRect {
+            CGRect(x: rect.minX + x * u, y: rect.minY + y * u, width: width * u, height: height * u)
+        }
+        var path = Path()
+        path.addEllipse(in: box(3.4, 0.2, 3.6, 3.6))
+        path.addRoundedRect(in: box(3.6, 4.6, 3.2, 6.6), cornerSize: CGSize(width: 1.4 * u, height: 1.4 * u))
+        path.addRoundedRect(in: box(3.6, 8.4, 7.4, 2.8), cornerSize: CGSize(width: 1.4 * u, height: 1.4 * u))
+        path.addRoundedRect(in: box(8.4, 8.4, 2.6, 5.6), cornerSize: CGSize(width: 1.3 * u, height: 1.3 * u))
         return path
     }
 }

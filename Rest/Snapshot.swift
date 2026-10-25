@@ -81,7 +81,7 @@ enum Snapshot {
         let shazam = Island.Call(title: "Shazam is active", name: "Shazam", icon: Island.icon(bundleID: "com.shazam.mac.Shazam"), ignore: {}, always: {})
         for (name, mode, content, remaining, call) in [("island-compact", IslandModel.Mode.compact, IslandModel.Content.countdown, 42.0, arc),
                                                        ("island-expanded", .expanded, .countdown, 5.0, arc), ("island-call", .expanded, .call, 0, arc),
-                                                       ("island-shazam", .expanded, .call, 0, shazam)] {
+                                                       ("island-shazam", .expanded, .call, 0, shazam), ("island-posture", .expanded, .posture, 0, arc)] {
             let model = IslandModel()
             model.notch = CGSize(width: 185, height: 32)
             model.mode = mode
@@ -97,6 +97,10 @@ enum Snapshot {
             .frame(width: 560, height: 150)
             write(view, to: directory.appendingPathComponent("\(name).png"))
         }
+        // Without a notch, the posture reminder's capsule.
+        let capsule = PosturePill().padding(20)
+        write(capsule.background(Theme.ground), to: directory.appendingPathComponent("posture-capsule.png"))
+        write(capsule.background(Theme.ground), to: directory.appendingPathComponent("posture-capsule-dark.png"), scheme: .dark)
     }
 
     /// The countdown by the pointer, seven seconds out, beside the arrow.
@@ -144,7 +148,8 @@ enum Snapshot {
 
 /// `Rest --island` plays the island live over the notch: twelve seconds of
 /// countdown, the warning opening at five, then closing back into the notch.
-/// The countdown by the pointer runs with it for the last ten seconds.
+/// The countdown by the pointer runs with it for the last ten seconds. Then
+/// the posture reminder, and a call notice.
 @MainActor
 enum IslandDemo {
     static func run() {
@@ -173,6 +178,9 @@ enum IslandDemo {
             island.hideCountdown()
             cursor.hide()
             try? await Task.sleep(for: .seconds(1.5))
+            // The posture reminder, which closes by itself after six seconds.
+            island.posture()
+            try? await Task.sleep(for: .seconds(8))
             // Then a call starting in Arc; it closes by itself after eight seconds.
             island.notice(.init(title: "On a call in Arc", name: "Arc", icon: Island.icon(bundleID: "company.thebrowser.Browser"),
                                 ignore: { print("ignore till next break"); island.hideNotice() },

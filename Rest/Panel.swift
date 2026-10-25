@@ -277,35 +277,50 @@ private struct NextBreakRow: View {
 // MARK: Footer
 
 private struct Footer: View {
-    let rest: Rest
+    @Bindable var rest: Rest
     @State private var atLogin = false
-    @State private var hovering = false
 
     var body: some View {
         HStack {
+            FooterToggle(title: "Posture reminders", on: rest.postureReminders) {
+                rest.postureReminders.toggle()
+            }
+            .help("A reminder to sit up straight every \(Int(rest.settings.posture / 60)) minutes of work")
             Spacer()
-            Button {
+            FooterToggle(title: "Open at login", on: atLogin) {
                 rest.opensAtLogin = !atLogin
                 atLogin = rest.opensAtLogin
-            } label: {
-                HStack(spacing: 5) {
-                    Circle()
-                        .fill(atLogin ? Theme.ink : .clear)
-                        .overlay(Circle().strokeBorder(atLogin ? Theme.ink : Theme.muted, lineWidth: 1))
-                        .frame(width: 7, height: 7)
-                    Text("Open at login")
-                }
-                .foregroundStyle(hovering || atLogin ? Theme.ink : Theme.muted)
-                .contentShape(Rectangle())
             }
-            .onHover { hovering = $0 }
-            .animation(.easeOut(duration: 0.12), value: hovering)
-            .animation(.easeOut(duration: 0.12), value: atLogin)
         }
-        .buttonStyle(.plain)
-        .font(.system(size: 11))
-        .foregroundStyle(Theme.muted)
         .padding(.horizontal, 4)
         .onAppear { atLogin = rest.opensAtLogin }
+    }
+}
+
+/// A footer setting: a small dot, filled in while it's on, and its name.
+private struct FooterToggle: View {
+    let title: String
+    let on: Bool
+    let action: () -> Void
+    @State private var hovering = false
+
+    var body: some View {
+        Button(action: action) {
+            HStack(spacing: 5) {
+                Circle()
+                    .fill(on ? Theme.ink : .clear)
+                    .overlay(Circle().strokeBorder(on ? Theme.ink : Theme.muted, lineWidth: 1))
+                    .frame(width: 7, height: 7)
+                Text(title)
+            }
+            .font(.system(size: 11))
+            .foregroundStyle(hovering || on ? Theme.ink : Theme.muted)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .onHover { hovering = $0 }
+        .animation(.easeOut(duration: 0.12), value: hovering)
+        .animation(.easeOut(duration: 0.12), value: on)
+        .accessibilityAddTraits(on ? .isSelected : [])
     }
 }

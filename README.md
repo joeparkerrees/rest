@@ -12,6 +12,7 @@ Every 20 minutes it covers the screen for 30 seconds, and every fourth break is 
 - Take a break now starts one straight away.
 - In the last minute before a break, the notch widens to count down to it, like the Dynamic Island. Five seconds out it opens into the warning; its 5 more min key pushes the break back. On a Mac without a notch the warning is a white capsule under the menu bar instead, and clicking it does the same.
 - For the last 10 seconds before a break, a small black disc follows the pointer with the seconds counting down in it. It doesn't take clicks, and near the edge of a screen it moves to the other side of the pointer.
+- Every 10 minutes of work the notch opens with a reminder to sit up straight. It closes by itself after six seconds, and a reminder that comes during a call or a video is skipped. On a Mac without a notch it's a white capsule under the menu bar. Posture reminders in the panel's footer turns them off.
 - When a call starts, the notch opens with "On a call in Arc" next to the app's icon. Under it are two keys. Ignore till next break stops this call counting. Always ignore Arc stops Arc counting for good. It closes by itself after eight seconds unless the pointer is on it, and it doesn't open for the same app again within ten minutes. If an ignored app has the mic, click the call row in the panel to count it again. Shazam counts too, since it has the mic. Its notice reads "Shazam is active".
 - Click the next-break row to push the break back five minutes.
 - On the break screen, Skip or Esc twice ends it once the first five seconds are up. Until then Skip is filled in, and the fill shrinks from right to left.
@@ -45,14 +46,14 @@ A break that comes due during a call starts 10 seconds after the call ends. A ca
 
 Apps you've chosen to always ignore are kept under `ignoredApps`; `defaults delete com.joeparkerrees.rest ignoredApps` clears the list.
 
-All times are in seconds, through `defaults write com.joeparkerrees.rest <key> <value>`: `work` (1200), `shortBreak` (30), `longBreak` (180), `longEvery` (3), `pauseAfterIdle` (60), `resetAfterIdle` (300), `warning` (5), `skipLock` (5), `afterCall` (10), `cursor` (10, and 0 turns the pointer countdown off).
+All times are in seconds, through `defaults write com.joeparkerrees.rest <key> <value>`: `work` (1200), `shortBreak` (30), `longBreak` (180), `longEvery` (3), `pauseAfterIdle` (60), `resetAfterIdle` (300), `warning` (5), `skipLock` (5), `afterCall` (10), `cursor` (10, and 0 turns the pointer countdown off), `posture` (600).
 
 ## Development
 
 Debug builds take three flags.
 
 - `--snapshot <folder>` renders the panel in five states, the break screen, the notch, the pointer countdown and every sight's pictogram offscreen, in light and dark, then quits.
-- `--island` plays the notch live: twelve seconds of countdown, the warning opening at five and closing, then a call notice for Arc. The pointer countdown runs with it for the last ten seconds.
+- `--island` plays the notch live: twelve seconds of countdown, the warning opening at five and closing, the posture reminder, then a call notice for Arc. The pointer countdown runs with it for the last ten seconds.
 - `--meetings [seconds]` prints every input device it's watching or skipping, then once a second whether there's a call, which mic is live and which app has it. Open Voice Memos or join a call while it runs to see it change.
 
 ```sh
@@ -64,8 +65,8 @@ build/Build/Products/Debug/Rest.app/Contents/MacOS/Rest --meetings 30
 - `MeetingDetector.swift` is the call detection: microphones, cameras and which app.
 - `Activity.swift` reads idle time and the video check.
 - `Rest.swift` is the clock and its rules.
-- `Horizon.swift` is the panel's picture, `Panel.swift` everything around it, and `BreakScreen.swift` the break and the capsule warning.
-- `Island.swift` is the countdown and warning that grow out of the notch.
+- `Horizon.swift` is the panel's picture, `Panel.swift` everything around it, and `BreakScreen.swift` the break and the capsules for Macs without a notch.
+- `Island.swift` is everything that grows out of the notch.
 - `Cursor.swift` is the countdown that follows the pointer.
 - `Sights.swift` has the things to look at. Their pictograms are template PDFs under `Assets.xcassets/Sights`: eight traced from the pictogram set, and the spire, cloud, bird, crane and chimney drawn to match it. `tools/draw-sights.py <folder>` redraws those five (it needs Pillow and potrace).
 - `Theme.swift` has the colours, the same greys and red as my [NTS app](https://github.com/joeparkerrees/nts), with a dark version of each.
