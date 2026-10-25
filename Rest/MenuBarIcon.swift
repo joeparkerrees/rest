@@ -7,9 +7,9 @@ import AppKit
 enum MenuBarIcon {
     enum Mark: CaseIterable {
         /// The panel's picture in small: a rounded frame with the land
-        /// filled along the bottom and the sun in the sky.
+        /// filled along the bottom and a pointed tree standing on it.
         case picture
-        /// A ring with its lower half filled: an eyelid closing, or the sun going down.
+        /// A ring with its lower half filled, like an eyelid closing.
         case lid
         /// A solid disc with a slot knocked out: a closed eye.
         case slot
@@ -66,7 +66,12 @@ enum MenuBarIcon {
             NSBezierPath(roundedRect: frame, xRadius: 3, yRadius: 3).addClip()
             NSBezierPath(rect: CGRect(x: box.minX, y: box.minY, width: box.width, height: 5.5)).fill()
             NSGraphicsContext.restoreGraphicsState()
-            NSBezierPath(ovalIn: CGRect(x: box.minX + 7.6, y: box.minY + 7.4, width: 3.2, height: 3.2)).fill()
+            let tree = NSBezierPath()
+            tree.move(to: CGPoint(x: box.minX + 6.6, y: box.minY + 5))
+            tree.line(to: CGPoint(x: box.minX + 9, y: box.minY + 10.4))
+            tree.line(to: CGPoint(x: box.minX + 11.4, y: box.minY + 5))
+            tree.close()
+            tree.fill()
         case .lid:
             let outline = NSBezierPath(ovalIn: disc.insetBy(dx: 0.6, dy: 0.6))
             outline.lineWidth = 1.2

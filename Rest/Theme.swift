@@ -1,9 +1,9 @@
 import AppKit
 import SwiftUI
 
-/// A landscape: a pale sky over dark green land, with a red sun. The panel
-/// sits on a paler haze so the sky reads as a picture, and its cards are
-/// white. In dark mode it's the same scene at night, and the sun stays red.
+/// A landscape: a pale sky over dark green land. The panel sits on a paler
+/// haze so the sky reads as a picture, and its cards are white. In dark mode
+/// it's the same scene at night.
 enum Theme {
     static let haze = Color(light: 0xEDF2F4, dark: 0x0F161C)
     static let sky = Color(light: 0xDCE8EE, dark: 0x34495A)
@@ -19,7 +19,7 @@ enum Theme {
     static let faint = Color(light: 0xB4C6CE, dark: 0x41525D)
     static let muted = Color(light: 0x566C67, dark: 0xA3B3B0)
     static let hover = Color(light: 0xF3F7F9, dark: 0x273540)
-    /// The sun, and the on-air dots while a call has the mic.
+    /// The on-air dots while a call has the mic.
     static let red = Color(hex: 0xE0330C)
 
     static let panelWidth: CGFloat = 280

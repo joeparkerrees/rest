@@ -1,10 +1,11 @@
 import AppKit
 import SwiftUI
 
-/// The last few seconds before a break, beside the pointer: the red sun
-/// with the seconds counting down in it. It's there so a break doesn't start
-/// without warning while you're looking nowhere near the notch. It follows the pointer from screen to screen, never takes clicks,
-/// and moves to the other side of the pointer near a screen's edge.
+/// The last few seconds before a break, beside the pointer: a small green
+/// disc with the seconds counting down in it. It's there so a break doesn't
+/// start without warning while you're looking nowhere near the notch. It
+/// follows the pointer from screen to screen, never takes clicks, and moves
+/// to the other side of the pointer near a screen's edge.
 @MainActor
 final class CursorCountdown: NSObject {
     static let size: CGFloat = 30
@@ -119,8 +120,8 @@ private struct CursorCountdownView: View {
     }
 }
 
-/// The sun at 30 points with the seconds in it, white on red so it stands
-/// out over whatever's under the pointer.
+/// A 30 point disc in the pause key's green with the seconds in it, and a
+/// shadow so it stands out over whatever's under the pointer.
 struct CursorDial: View {
     let seconds: Int
     var size: CGFloat = CursorCountdown.size
@@ -129,10 +130,10 @@ struct CursorDial: View {
         Text("\(seconds)")
             .font(.system(size: 13, weight: .semibold))
             .monospacedDigit()
-            .foregroundStyle(.white)
+            .foregroundStyle(Theme.onLand)
             .contentTransition(.numericText(countsDown: true))
             .animation(.easeOut(duration: 0.2), value: seconds)
             .frame(width: size, height: size)
-            .background(Circle().fill(Theme.red).shadow(color: .black.opacity(0.18), radius: 4, y: 1.5))
+            .background(Circle().fill(Theme.key).shadow(color: .black.opacity(0.18), radius: 4, y: 1.5))
     }
 }
