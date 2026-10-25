@@ -21,7 +21,7 @@ struct BreakScreen: View {
             let size = geometry.size
             let horizon = size.height * (1 - Self.land)
             ZStack(alignment: .topLeading) {
-                Theme.sky
+                Theme.ground
                 Theme.land
                     .frame(height: size.height - horizon)
                     .frame(maxHeight: .infinity, alignment: .bottom)
@@ -51,7 +51,7 @@ struct BreakScreen: View {
             VStack(spacing: 0) {
                 Text("Try and look at \(sight.thing)")
                     .font(.system(size: 17))
-                    .foregroundStyle(Theme.onLand)
+                    .foregroundStyle(Theme.ink)
                     .multilineTextAlignment(.center)
                     .padding(.top, (size.height - horizon) * 0.24)
                 Spacer(minLength: 24)
@@ -100,7 +100,7 @@ private struct SkipKey: View {
         .buttonStyle(LandKey(fill: fill))
         .disabled(!unlocked)
         .font(.system(size: 12))
-        .foregroundStyle(Theme.onLand.opacity(unlocked ? 1 : 0.55))
+        .foregroundStyle(Theme.ink.opacity(unlocked ? 1 : 0.55))
         .animation(.easeOut(duration: 0.15), value: unlocked)
         .help("Or press Esc twice")
         .accessibilityHint(unlocked ? "" : "Available after the first few seconds")
@@ -118,7 +118,7 @@ private struct SkipKey: View {
     }
 }
 
-/// A key standing on the land: a hairline capsule in the sky's colour, with
+/// A key standing on the land: a hairline capsule tinted with the ink, with
 /// the lock's fill drawn in it from the left edge.
 struct LandKey: ButtonStyle {
     /// How much of the key is filled, from the left edge.
@@ -131,15 +131,15 @@ struct LandKey: ButtonStyle {
             .padding(.horizontal, 12)
             .background {
                 Capsule()
-                    .fill(Theme.onLand.opacity(pressed ? 0.16 : 0.06))
+                    .fill(Theme.ink.opacity(pressed ? 0.16 : 0.06))
                     .overlay(alignment: .leading) {
                         Rectangle()
-                            .fill(Theme.onLand.opacity(0.2))
+                            .fill(Theme.ink.opacity(0.2))
                             .scaleEffect(x: fill, anchor: .leading)
                     }
                     .clipShape(Capsule())
             }
-            .overlay(Capsule().strokeBorder(Theme.onLand.opacity(0.35), lineWidth: 1))
+            .overlay(Capsule().strokeBorder(Theme.ink.opacity(0.35), lineWidth: 1))
             .scaleEffect(pressed && !reduceMotion ? 0.96 : 1)
             .animation(pressed ? Theme.keyDown : Theme.keyUp, value: pressed)
     }

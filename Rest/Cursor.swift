@@ -1,7 +1,7 @@
 import AppKit
 import SwiftUI
 
-/// The last few seconds before a break, beside the pointer: a small green
+/// The last few seconds before a break, beside the pointer: a small ink
 /// disc with the seconds counting down in it. It's there so a break doesn't
 /// start without warning while you're looking nowhere near the notch. It
 /// follows the pointer from screen to screen, never takes clicks, and moves
@@ -120,7 +120,7 @@ private struct CursorCountdownView: View {
     }
 }
 
-/// A 30 point disc in the pause key's green with the seconds in it, and a
+/// A 30 point ink disc with the seconds in it, like the pause key, and a
 /// shadow so it stands out over whatever's under the pointer.
 struct CursorDial: View {
     let seconds: Int
@@ -130,10 +130,10 @@ struct CursorDial: View {
         Text("\(seconds)")
             .font(.system(size: 13, weight: .semibold))
             .monospacedDigit()
-            .foregroundStyle(Theme.onLand)
+            .foregroundStyle(Theme.paper)
             .contentTransition(.numericText(countsDown: true))
             .animation(.easeOut(duration: 0.2), value: seconds)
             .frame(width: size, height: size)
-            .background(Circle().fill(Theme.key).shadow(color: .black.opacity(0.18), radius: 4, y: 1.5))
+            .background(Circle().fill(Theme.ink).shadow(color: .black.opacity(0.18), radius: 4, y: 1.5))
     }
 }

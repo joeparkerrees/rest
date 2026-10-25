@@ -1,7 +1,7 @@
 import SwiftUI
 
-/// The panel's picture: a pale sky over the land, with the sight for your
-/// next break standing on the horizon. The time sits in the sky on the left.
+/// The panel's picture: a white sky over grey land, with the sight for your
+/// next break standing on the horizon in ink. The time sits in the sky on the left.
 struct HorizonScene: View {
     let rest: Rest
     var width: CGFloat = Theme.panelWidth - Theme.gutter * 2
@@ -17,7 +17,7 @@ struct HorizonScene: View {
     var body: some View {
         let centre = width - Self.inset
         return ZStack(alignment: .topLeading) {
-            Theme.sky
+            Theme.paper
             Theme.land
                 .frame(height: Self.land)
                 .frame(maxHeight: .infinity, alignment: .bottom)
@@ -31,9 +31,6 @@ struct HorizonScene: View {
         }
         .frame(width: width, height: Self.height)
         .clipShape(RoundedRectangle(cornerRadius: Theme.cardRadius))
-        // At night the land is darker than the haze, so a hairline keeps
-        // the picture's edge.
-        .overlay(RoundedRectangle(cornerRadius: Theme.cardRadius).strokeBorder(Theme.line, lineWidth: 1))
         .accessibilityElement(children: .combine)
     }
 }

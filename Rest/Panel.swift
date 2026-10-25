@@ -2,7 +2,7 @@ import AppKit
 import SwiftUI
 
 /// Everything that drops out of the menu bar: the picture, a row of keys,
-/// a white card of rows, and a footer, on the haze.
+/// a white card of rows, and a footer, on the grey ground.
 struct Panel: View {
     @Bindable var rest: Rest
 
@@ -15,7 +15,7 @@ struct Panel: View {
         }
         .padding(Theme.gutter)
         .frame(width: Theme.panelWidth)
-        .background(Theme.haze)
+        .background(Theme.ground)
         .onKeyPress(characters: ["q"]) { press in
             guard press.modifiers.contains(.command) else { return .ignored }
             NSApp.terminate(nil)
@@ -48,7 +48,7 @@ private struct Keys: View {
     }
 }
 
-/// The round land-green key: pause the clock for an hour, or start it again.
+/// The round ink key: pause the clock for an hour, or start it again.
 private struct PauseKey: View {
     let rest: Rest
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
@@ -56,9 +56,9 @@ private struct PauseKey: View {
     var body: some View {
         Button(action: rest.togglePause) {
             ZStack {
-                Circle().fill(Theme.key)
+                Circle().fill(Theme.ink)
                 PauseGlyph(play: rest.isPaused ? 1 : 0)
-                    .fill(Theme.onLand)
+                    .fill(Theme.paper)
                     .animation(reduceMotion ? .easeOut(duration: 0.12) : .snappy(duration: 0.24), value: rest.isPaused)
             }
             .frame(width: 34, height: 34)
@@ -127,7 +127,7 @@ private struct Rows: View {
     }
 
     private var divider: some View {
-        Rectangle().fill(Theme.haze).frame(height: 1).padding(.leading, 48)
+        Rectangle().fill(Theme.ground).frame(height: 1).padding(.leading, 48)
     }
 }
 

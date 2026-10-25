@@ -44,7 +44,7 @@ enum Snapshot {
                 Button {} label: { Text("Skip").frame(minWidth: 88, minHeight: 30) }
                     .buttonStyle(LandKey(fill: fill))
                     .font(.system(size: 12))
-                    .foregroundStyle(Theme.onLand.opacity(fill > 0 ? 0.55 : 1))
+                    .foregroundStyle(Theme.ink.opacity(fill > 0 ? 0.55 : 1))
             }
         }
         .padding(24)
@@ -103,7 +103,7 @@ enum Snapshot {
     static func renderCursor(to directory: URL) {
         let pointer = CGPoint(x: 28, y: 22)
         let view = ZStack(alignment: .topLeading) {
-            Theme.haze
+            Theme.ground
             CursorDial(seconds: 7)
                 .offset(x: pointer.x + CursorCountdown.offset - CursorCountdown.size / 2, y: pointer.y + CursorCountdown.offset - CursorCountdown.size / 2)
             // Offscreen there's no cursor image to draw, so a stand-in arrow
