@@ -12,6 +12,7 @@ struct BreakScreen: View {
     var isMain = true
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var shown = false
+    @State private var risen = false
 
     /// The land's share of the screen's height.
     static let land: CGFloat = 0.32
@@ -26,6 +27,8 @@ struct BreakScreen: View {
                     .frame(height: size.height - horizon)
                     .frame(maxHeight: .infinity, alignment: .bottom)
                 if isMain {
+                    RisingSight(sight: sight, size: (size.height * 0.16).rounded(), horizon: horizon, width: size.width, rise: risen || reduceMotion ? 1 : 0)
+                        .opacity(shown ? 1 : 0)
                     foreground(size: size, horizon: horizon)
                         .opacity(shown ? 1 : 0)
                         .offset(y: shown || reduceMotion ? 0 : 6)
@@ -37,15 +40,13 @@ struct BreakScreen: View {
             // The window fades in first; the sight and the time settle in
             // just behind it.
             withAnimation(Theme.settle.delay(0.12)) { shown = true }
+            withAnimation(Theme.rise.delay(0.12)) { risen = true }
         }
         .accessibilityElement(children: .contain)
     }
 
     private func foreground(size: CGSize, horizon: CGFloat) -> some View {
-        let figure = (size.height * 0.16).rounded()
-        return ZStack(alignment: .topLeading) {
-            SightFigure(sight: sight, size: figure)
-                .position(x: size.width / 2, y: horizon - figure / 2)
+        ZStack(alignment: .topLeading) {
             clock
                 .position(x: size.width / 2, y: horizon * 0.36)
             VStack(spacing: 0) {
@@ -80,6 +81,28 @@ struct BreakScreen: View {
         .accessibilityElement(children: .ignore)
         .accessibilityLabel(isLong ? "Long break" : "Short break")
         .accessibilityValue("\(Int(rest.breakRemaining.rounded())) seconds left")
+    }
+}
+
+/// The sight arriving for a break, in the land's colour: things that stand come up out of the land,
+/// cut off at the horizon, and things that fly drift down into place. `rise`
+/// runs from 0 to 1.
+struct RisingSight: View {
+    let sight: Sight
+    let size: CGFloat
+    let horizon: CGFloat
+    let width: CGFloat
+    var rise: CGFloat = 1
+
+    var body: some View {
+        let travel = sight.foot == nil ? -16 : size
+        SightFigure(sight: sight, size: size, color: Theme.land)
+            .offset(y: (1 - rise) * travel)
+            .position(x: width / 2, y: horizon - size / 2)
+            .mask(alignment: .top) {
+                // Two points past the horizon, for the overlap that hides the seam.
+                Rectangle().frame(height: horizon + 2)
+            }
     }
 }
 
@@ -124,49 +147,50 @@ struct LandKey: ButtonStyle {
     /// How much of the key is filled, from the left edge.
     var fill: CGFloat = 0
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
-
-    func makeBody(configuration: Configuration) -> some View {
-        let pressed = configuration.isPressed
-        return configuration.label
-            .padding(.horizontal, 12)
-            .background {
-                Capsule()
-                    .fill(Theme.ink.opacity(pressed ? 0.16 : 0.06))
-                    .overlay(alignment: .leading) {
-                        Rectangle()
-                            .fill(Theme.ink.opacity(0.2))
-                            .scaleEffect(x: fill, anchor: .leading)
-                    }
-                    .clipShape(Capsule())
-            }
-            .overlay(Capsule().strokeBorder(Theme.ink.opacity(0.35), lineWidth: 1))
-            .scaleEffect(pressed && !reduceMotion ? 0.96 : 1)
-            .animation(pressed ? Theme.keyDown : Theme.keyUp, value: pressed)
-    }
-}
-
-/// A quiet text key: paper with a hairline, dips when pressed.
-struct QuietKey: ButtonStyle {
-    /// How much of the key is filled, from the left edge.
-    var fill: CGFloat = 0
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.isEnabled) private var isEnabled
 
     func makeBody(configuration: Configuration) -> some View {
         let pressed = configuration.isPressed
+        return Hovering { hovering in
+            configuration.label
+                .padding(.horizontal, 12)
+                .background {
+                    Capsule()
+                        .fill(Theme.ink.opacity(pressed ? 0.16 : hovering && isEnabled ? 0.11 : 0.06))
+                        .overlay(alignment: .leading) {
+                            Rectangle()
+                                .fill(Theme.ink.opacity(0.2))
+                                .scaleEffect(x: fill, anchor: .leading)
+                        }
+                        .clipShape(Capsule())
+                }
+                .overlay(Capsule().strokeBorder(Theme.ink.opacity(0.35), lineWidth: 1))
+                .scaleEffect(pressed && !reduceMotion ? 0.96 : 1)
+                .animation(pressed ? Theme.keyDown : Theme.keyUp, value: pressed)
+        }
+    }
+}
+
+/// Hands a key's style whether the pointer is over it, since a style with its
+/// own state can't be made from outside its file.
+struct Hovering<Content: View>: View {
+    @ViewBuilder let content: (Bool) -> Content
+    @State private var hovering = false
+
+    var body: some View {
+        content(hovering)
+            .onHover { hovering = $0 }
+            .animation(.easeOut(duration: 0.12), value: hovering)
+    }
+}
+
+/// For keys that draw themselves: no chrome, and dips when pressed.
+struct DipKey: ButtonStyle {
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
+    func makeBody(configuration: Configuration) -> some View {
+        let pressed = configuration.isPressed
         return configuration.label
-            .padding(.horizontal, 12)
-            .background {
-                Capsule()
-                    .fill(Theme.paper)
-                    .overlay(alignment: .leading) {
-                        Rectangle()
-                            .fill(Theme.line)
-                            .scaleEffect(x: fill, anchor: .leading)
-                    }
-                    .clipShape(Capsule())
-            }
-            .overlay(Capsule().strokeBorder(Theme.line, lineWidth: 1))
             .scaleEffect(pressed && !reduceMotion ? 0.96 : 1)
             .opacity(pressed && reduceMotion ? 0.7 : 1)
             .animation(pressed ? Theme.keyDown : Theme.keyUp, value: pressed)
@@ -333,7 +357,7 @@ private struct WarningPill: View {
             .overlay(Capsule().strokeBorder(Theme.line, lineWidth: 1))
             .contentShape(Capsule())
         }
-        .buttonStyle(.plain)
+        .buttonStyle(DipKey())
         .onHover { hovering = $0 }
         .animation(.easeOut(duration: 0.12), value: hovering)
     }
@@ -423,7 +447,7 @@ struct PosturePill: View {
             .overlay(Capsule().strokeBorder(Theme.line, lineWidth: 1))
             .contentShape(Capsule())
         }
-        .buttonStyle(.plain)
+        .buttonStyle(DipKey())
         .frame(height: 40)
         .onHover { hovering = $0; hover($0) }
         .animation(.easeOut(duration: 0.12), value: hovering)

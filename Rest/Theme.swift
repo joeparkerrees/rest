@@ -5,7 +5,8 @@ import SwiftUI
 /// near-black ink, greys for everything secondary and a single Braun red.
 /// In dark mode the objects are charcoal on a darker ground with pale ink,
 /// so they still sit a step above it, and the red stays the same. The
-/// landscape is drawn in the same greys, with the sights in ink.
+/// landscape is drawn in the same greys, and the sights on the break screen
+/// match the land.
 enum Theme {
     static let ink = Color(light: 0x1D1D1D, dark: 0xECECEC)
     static let paper = Color(light: 0xFFFFFF, dark: 0x2A2A2A)
@@ -21,8 +22,6 @@ enum Theme {
     static let red = Color(hex: 0xE0330C)
 
     static let panelWidth: CGFloat = 280
-    static let gutter: CGFloat = 12
-    static let cardRadius: CGFloat = 12
 
     /// Settle: items land fast and ease the last few pixels.
     static let settle = Animation.timingCurve(0, 0.5, 0.2, 1, duration: 0.35)
@@ -35,6 +34,9 @@ enum Theme {
     /// A key going down, and coming back up without a wobble.
     static let keyDown = Animation.easeOut(duration: 0.08)
     static let keyUp = Animation.spring(duration: 0.2, bounce: 0)
+    /// The sight coming up at the start of a break: slow to arrive, because
+    /// it only happens every twenty minutes.
+    static let rise = Animation.spring(duration: 0.7, bounce: 0)
     /// The one-time sweep round the dial: eases in, travels, eases to a stop.
     static let sweep = Animation.timingCurve(0.77, 0, 0.18, 1, duration: 1.2)
 }

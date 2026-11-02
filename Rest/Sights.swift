@@ -50,16 +50,17 @@ struct SightIcon: View {
     }
 }
 
-/// A sight in the landscape, in ink: standing on the horizon
+/// A sight in the landscape: standing on the horizon
 /// with its foot on the line, or up in the sky if it flies. Place it with
 /// its frame's bottom edge on the horizon.
 struct SightFigure: View {
     let sight: Sight
     var size: CGFloat
+    var color = Theme.ink
 
     var body: some View {
         SightIcon(icon: sight.icon, size: size)
-            .foregroundStyle(Theme.ink)
+            .foregroundStyle(color)
             // One unit past the foot, so the figure overlaps the land with no seam.
             .offset(y: sight.foot.map { ($0 + 1) / 196 * size } ?? -size * 0.6)
     }
