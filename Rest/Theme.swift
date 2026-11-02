@@ -5,7 +5,8 @@ import SwiftUI
 /// near-black ink, greys for everything secondary and a single Braun red.
 /// In dark mode the objects are charcoal on a darker ground with pale ink,
 /// so they still sit a step above it, and the red stays the same. The
-/// landscape is drawn in the same greys, with the sights in ink.
+/// landscape is drawn in the same greys, and the sights on the break screen
+/// match the land.
 enum Theme {
     static let ink = Color(light: 0x1D1D1D, dark: 0xECECEC)
     static let paper = Color(light: 0xFFFFFF, dark: 0x2A2A2A)

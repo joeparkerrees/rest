@@ -84,7 +84,7 @@ struct BreakScreen: View {
     }
 }
 
-/// The sight arriving for a break: things that stand come up out of the land,
+/// The sight arriving for a break, in the land's colour: things that stand come up out of the land,
 /// cut off at the horizon, and things that fly drift down into place. `rise`
 /// runs from 0 to 1.
 struct RisingSight: View {
@@ -96,7 +96,7 @@ struct RisingSight: View {
 
     var body: some View {
         let travel = sight.foot == nil ? -16 : size
-        SightFigure(sight: sight, size: size)
+        SightFigure(sight: sight, size: size, color: Theme.land)
             .offset(y: (1 - rise) * travel)
             .position(x: width / 2, y: horizon - size / 2)
             .mask(alignment: .top) {
