@@ -481,7 +481,7 @@ private struct CloseKey: View {
                 .padding(4)
                 .contentShape(Rectangle())
         }
-        .buttonStyle(.plain)
+        .buttonStyle(DipKey())
         .padding(-4)
         .onHover { hovering = $0 }
         .animation(.easeOut(duration: 0.12), value: hovering)

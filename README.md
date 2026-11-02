@@ -1,20 +1,20 @@
 # Rest
 
-A small macOS menu bar break timer. The panel and the break screen are a flat grey landscape with something to look at standing on the horizon.
+A small macOS menu bar break timer. The panel is one sheet with the time and a table in it. The break screen is a flat grey landscape with something to look at standing on the horizon.
 
 Every 20 minutes it covers the screen for 30 seconds, and every fourth break is 3 minutes. The break screen shows the time left and suggests something to look at out of the window, like a church spire or the top of a tree, each with its own pictogram. It follows the system's light or dark appearance. Breaks don't start while you're on a call or the app in front is playing video, and the clock stops while you're away.
 
 ## Controls
 
 - The menu bar shows the minutes until the next break, dimmed while the clock is stopped, and the seconds left in a filled box during a break.
-- The picture in the panel shows the time until the next break, with the thing to look at in the next break standing on the horizon.
-- The round key pauses for an hour, or starts the clock again.
-- Take a break now starts one straight away.
+- The top of the panel shows the time until the next break, with the thing to look at in the next break standing on the line under it.
+- Pause stops the clock for an hour, or starts it again.
+- Take a break starts one straight away.
 - In the last minute before a break, the notch widens to count down to it, like the Dynamic Island. Five seconds out it opens into the warning; its 5 more min key pushes the break back. On a Mac without a notch the warning is a white capsule under the menu bar instead, and clicking it does the same.
 - For the last 10 seconds before a break, a small black disc follows the pointer with the seconds counting down in it. It doesn't take clicks, and near the edge of a screen it moves to the other side of the pointer.
-- Every 10 minutes of work the notch opens with a reminder to sit up straight. It closes by itself after six seconds, and a reminder that comes during a call or a video is skipped. On a Mac without a notch it's a white capsule under the menu bar. Posture reminders in the panel's footer turns them off.
-- When a call starts, the notch opens with "On a call in Arc" next to the app's icon. Under it are two keys. Ignore till next break stops this call counting. Always ignore Arc stops Arc counting for good. It closes by itself after eight seconds unless the pointer is on it, and it doesn't open for the same app again within ten minutes. If an ignored app has the mic, click the call row in the panel to count it again. Shazam counts too, since it has the mic. Its notice reads "Shazam is active".
-- Click the next-break row to push the break back five minutes.
+- Every 10 minutes of work the notch opens with a reminder to sit up straight. It closes by itself after six seconds, and a reminder that comes during a call or a video is skipped. On a Mac without a notch it's a white capsule under the menu bar. Posture reminders in the panel turns them off.
+- When a call starts, the notch opens with "On a call in Arc" next to the app's icon. Under it are two keys. Ignore till next break stops this call counting. Always ignore Arc stops Arc counting for good. It closes by itself after eight seconds unless the pointer is on it, and it doesn't open for the same app again within ten minutes. If an ignored app has the mic, click the Microphone row in the panel to count it again. Shazam counts too, since it has the mic. Its notice reads "Shazam is active".
+- Click the Next row to push the break back five minutes.
 - On the break screen, Skip or Esc twice ends it once the first five seconds are up. Until then Skip is filled in, and the fill shrinks from right to left.
 - ⌘Q, or right-click anywhere in the panel, quits.
 
@@ -65,7 +65,7 @@ build/Build/Products/Debug/Rest.app/Contents/MacOS/Rest --meetings 30
 - `MeetingDetector.swift` is the call detection: microphones, cameras and which app.
 - `Activity.swift` reads idle time and the video check.
 - `Rest.swift` is the clock and its rules.
-- `Horizon.swift` is the panel's picture, `Panel.swift` everything around it, and `BreakScreen.swift` the break and the capsules for Macs without a notch.
+- `Horizon.swift` is the top of the panel, `Panel.swift` everything under it, and `BreakScreen.swift` the break and the capsules for Macs without a notch.
 - `Island.swift` is everything that grows out of the notch.
 - `Cursor.swift` is the countdown that follows the pointer.
 - `Sights.swift` has the things to look at. Their pictograms are template PDFs under `Assets.xcassets/Sights`: eight traced from the pictogram set, and the spire, cloud, bird, crane and chimney drawn to match it. `tools/draw-sights.py <folder>` redraws those five (it needs Pillow and potrace).

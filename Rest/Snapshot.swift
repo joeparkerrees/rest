@@ -38,6 +38,21 @@ enum Snapshot {
         // A sight that flies rather than stands.
         write(BreakScreen(rest: rest, sight: Sight.all[4]).frame(width: 1440, height: 900), to: directory.appendingPathComponent("break-plane.png"), scale: 1)
 
+        // The sight coming up, a quarter and two thirds of the way, standing and flying.
+        for (name, sight) in [("spire", Sight.all[0]), ("plane", Sight.all[4])] {
+            for (label, rise) in [("25", CGFloat(0.25)), ("66", CGFloat(0.66))] {
+                let frame = ZStack(alignment: .topLeading) {
+                    Theme.ground
+                    Theme.land
+                        .frame(height: 900 * BreakScreen.land)
+                        .frame(maxHeight: .infinity, alignment: .bottom)
+                    RisingSight(sight: sight, size: 144, horizon: 900 * (1 - BreakScreen.land), width: 1440, rise: rise)
+                }
+                .frame(width: 1440, height: 900)
+                write(frame, to: directory.appendingPathComponent("rise-\(name)-\(label).png"), scale: 1)
+            }
+        }
+
         // Skip part way through its lock, at 2x.
         let skips = HStack(spacing: 16) {
             ForEach([1, 0.6, 0.25, 0], id: \.self) { fill in
